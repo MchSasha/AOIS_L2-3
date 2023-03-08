@@ -26,8 +26,44 @@ public class TruthTable {
                 result.append(" + ");
             }
         }
+        if (result.length() == 0) return "";
 
         result.delete(result.length() - 3, result.length());
+        return result.toString();
+    }
+    public String getNumericPDNF() {
+        StringBuilder result = new StringBuilder("+()");
+        int counterOfRaws = 0;
+
+        StringBuilder numericRepresentation = new StringBuilder();
+        for (ArrayList<Boolean> raw : table) {
+            if (raw.get(3)) {
+                numericRepresentation.append(counterOfRaws).append(", ");
+            }
+            counterOfRaws++;
+        }
+
+        if (numericRepresentation.length() == 0) return "";
+        numericRepresentation.delete(numericRepresentation.length() - 2, numericRepresentation.length());
+        result.insert(2, numericRepresentation);
+
+        return result.toString();
+    }
+    public String getNumericPCNF() {
+        StringBuilder result = new StringBuilder("*()");
+        int counterOfRaws = 0;
+
+        StringBuilder numericRepresentation = new StringBuilder();
+        for (ArrayList<Boolean> raw : table) {
+            if (!raw.get(3)) {
+                numericRepresentation.append(counterOfRaws).append(", ");
+            }
+            counterOfRaws++;
+        }
+        if (numericRepresentation.length() == 0) return "";
+        numericRepresentation.delete(numericRepresentation.length() - 2, numericRepresentation.length());
+        result.insert(2, numericRepresentation);
+
         return result.toString();
     }
 
@@ -40,7 +76,7 @@ public class TruthTable {
                 result.append(" * ");
             }
         }
-
+        if (result.length() == 0) return "";
         result.delete(result.length() - 3, result.length());
         return result.toString();
     }
