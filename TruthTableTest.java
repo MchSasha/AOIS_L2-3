@@ -69,7 +69,7 @@ class TruthTableTest {
     }
     @org.junit.jupiter.api.Test
     void getPerfectForms1() {
-        String formula = "!((!x + !y) * !(!x * !z))";   //!((!x + !y) * !(!x * z))
+        String formula = "!((!x + !y) * !(!x * !z))";
         TruthTable table1 = new TruthTable(formula);
         assertEquals("(!x * !y * !z) + (!x * y * !z) + (x * y * !z) + (x * y * z)", table1.getPDNF());
         assertEquals("(x + y + !z) * (x + !y + !z) * (!x + y + z) * (!x + y + !z)", table1.getPCNF());
