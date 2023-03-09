@@ -151,14 +151,17 @@ public class TruthTable {
     }
 
     public void getTruthTable(String initFormula) {
-        getTruthTableRawResult(initFormula, false,false,false);
-        getTruthTableRawResult(initFormula,false,false,true);
-        getTruthTableRawResult(initFormula,false,true,false);
-        getTruthTableRawResult(initFormula,false,true,true);
-        getTruthTableRawResult(initFormula,true,false,false);
-        getTruthTableRawResult(initFormula,true,false,true);
-        getTruthTableRawResult(initFormula,true,true,false);
-        getTruthTableRawResult(initFormula,true,true,true);
+        int numberOfRaws = (int) (Math.pow(2, 3));
+        int currentRaw = 0;
+        while (currentRaw != numberOfRaws) {
+            StringBuilder value = new StringBuilder(Integer.toBinaryString(currentRaw));
+            while (value.length() != 3) {
+                value.insert(0, '0');
+            }
+            
+            getTruthTableRawResult(initFormula, value.charAt(0) == '1', value.charAt(1) == '1', value.charAt(2) == '1');
+            currentRaw++;
+        }
     }
 
     public boolean getTruthTableRawResult(String formula, boolean xValue, boolean yValue, boolean zValue) {
