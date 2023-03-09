@@ -9,6 +9,6 @@ public class Main {
         System.out.println("PCNF --- " + table.getPCNF());
         System.out.println("Numeric form PDNF --- " + table.getNumericPDNF());
         System.out.println("Numeric form PCNF --- " + table.getNumericPCNF());
-        System.out.println("IndexForm --- " + table.getIndexForm());
+        System.out.println("Index form --- " + table.getIndexForm());
     }
 }
