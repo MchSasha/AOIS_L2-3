@@ -8,12 +8,12 @@ public class TruthTable {
         getTruthTable(formula);
     }
 
-    public void addRaw(boolean xValue, boolean yValue, boolean zValue, boolean result) {
+    public void addRaw(Boolean... value) {
         ArrayList<Boolean> temp = new ArrayList<>();
-        temp.add(xValue);
-        temp.add(yValue);
-        temp.add(zValue);
-        temp.add(result);
+        int i = 0;
+        while ( i < value.length) {
+            temp.add(value[i++]);
+        }
         table.add(temp);
     }
 
@@ -158,7 +158,7 @@ public class TruthTable {
             while (value.length() != 3) {
                 value.insert(0, '0');
             }
-            
+
             getTruthTableRawResult(initFormula, value.charAt(0) == '1', value.charAt(1) == '1', value.charAt(2) == '1');
             currentRaw++;
         }
