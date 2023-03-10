@@ -10,9 +10,9 @@ public class TruthTable {
 
     public void addRaw(Boolean... value) {
         ArrayList<Boolean> temp = new ArrayList<>();
-        int i = 0;
-        while ( i < value.length) {
-            temp.add(value[i++]);
+        int iter = 0;
+        while ( iter < value.length) {
+            temp.add(value[iter++]);
         }
         table.add(temp);
     }
