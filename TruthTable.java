@@ -1,26 +1,23 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class TruthTable {
-    private final ArrayList<ArrayList<Boolean>> table = new ArrayList<>();
+    private final List<List<Boolean>> table = new ArrayList<>();
+
+    public void addRaw(Boolean... value) {
+        table.add(List.of(value));
+    }
+    
 
     public TruthTable(String formula) {
         getTruthTable(formula);
     }
 
-    public void addRaw(Boolean... value) {
-        ArrayList<Boolean> temp = new ArrayList<>();
-        int iter = 0;
-        while ( iter < value.length) {
-            temp.add(value[iter++]);
-        }
-        table.add(temp);
-    }
-
     public String getPDNF() {
         StringBuilder result = new StringBuilder();
 
-        for (ArrayList<Boolean> raw : table) {
+        for (List<Boolean> raw : table) {
             if (raw.get(3)) {
                 result.append(constructOnesConstituent(raw));
                 result.append(" + ");
@@ -37,7 +34,7 @@ public class TruthTable {
         int counterOfRaws = 0;
 
         StringBuilder numericRepresentation = new StringBuilder();
-        for (ArrayList<Boolean> raw : table) {
+        for (List<Boolean> raw : table) {
             if (raw.get(3)) {
                 numericRepresentation.append(counterOfRaws).append(", ");
             }
@@ -55,7 +52,7 @@ public class TruthTable {
         StringBuilder result = new StringBuilder("f(3)");
 
         StringBuilder indexStringRepresentation = new StringBuilder();
-        for (ArrayList<Boolean> raw  : table) {
+        for (List<Boolean> raw  : table) {
             indexStringRepresentation.append((raw.get(3) ? '1' : '0'));
         }
 
@@ -71,7 +68,7 @@ public class TruthTable {
         int counterOfRaws = 0;
 
         StringBuilder numericRepresentation = new StringBuilder();
-        for (ArrayList<Boolean> raw : table) {
+        for (List<Boolean> raw : table) {
             if (!raw.get(3)) {
                 numericRepresentation.append(counterOfRaws).append(", ");
             }
@@ -87,7 +84,7 @@ public class TruthTable {
     public String getPCNF() {
         StringBuilder result = new StringBuilder();
 
-        for (ArrayList<Boolean> raw : table) {
+        for (List<Boolean> raw : table) {
             if (!raw.get(3)) {
                 result.append(constructZerosConstituent(raw));
                 result.append(" * ");
@@ -98,7 +95,7 @@ public class TruthTable {
         return result.toString();
     }
 
-    private String constructOnesConstituent(ArrayList<Boolean> truthTableRaw) {
+    private String constructOnesConstituent(List<Boolean> truthTableRaw) {
         StringBuilder result = new StringBuilder("()");
         int counterOfElementInRaw = 0;
 
@@ -119,7 +116,7 @@ public class TruthTable {
         }
         return result.toString();
     }
-    private String constructZerosConstituent(ArrayList<Boolean> truthTableRaw) {
+    private String constructZerosConstituent(List<Boolean> truthTableRaw) {
         StringBuilder result = new StringBuilder("()");
         int counterOfElementInRaw = 0;
 
