@@ -2,53 +2,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TruthTableTest {
     @org.junit.jupiter.api.Test
-    void getTruthTableRaw1() {
-        String formula = "!((!y + !z) * !(!x * !z))";
-        TruthTable table = new TruthTable(formula);
-        boolean result = table.getTruthTableRawResult(formula, false, false, false);
-        assertTrue(result);
-    }
-    @org.junit.jupiter.api.Test
-    void getTruthTableRaw2() {
-        String formula = "!((!y + !z) * !(!x * !z))";
-        TruthTable table = new TruthTable(formula);
-        boolean result = table.getTruthTableRawResult(formula, true, false, true);
-        assertFalse(result);
-    }
-    @org.junit.jupiter.api.Test
-    void getTruthTableRaw3() {
-        String formula = "!((!y + !z) * !(!x * !z))";
-        TruthTable table = new TruthTable(formula);
-        boolean result = table.getTruthTableRawResult(formula, true, true, false);
-        assertFalse(result);
-    }
-    @org.junit.jupiter.api.Test
-    void getTruthTableRaw4() {
-        String formula = "!((!y + !z) * !(!x * !z))";
-        TruthTable table = new TruthTable(formula);
-        boolean result = table.getTruthTableRawResult(formula, false, false, false);
-        assertTrue(result);
-    }
-    @org.junit.jupiter.api.Test
-    void getTruthTableRawWholeVariant1() {
-        String formula = "!((!y + !z) * !(!x * !z))";
-        TruthTable table1 = new TruthTable(formula);
-        assertTrue(table1.getTruthTableRawResult(formula, false, false, false));
-        assertFalse(table1.getTruthTableRawResult(formula, false, false, true));
-        assertTrue(table1.getTruthTableRawResult(formula, false, true, false));
-        assertTrue(table1.getTruthTableRawResult(formula, false, true, true));
-        assertFalse(table1.getTruthTableRawResult(formula, true, false, false));
-        assertFalse(table1.getTruthTableRawResult(formula, true, false, true));
-        assertFalse(table1.getTruthTableRawResult(formula, true, true, false));
-        assertTrue(table1.getTruthTableRawResult(formula, true, true, true));
-    }
-
-    @org.junit.jupiter.api.Test
     void getPDNF() {
         String formula = "!((!y + !z) * !(!x * !z))";
         TruthTable table1 = new TruthTable(formula);
         assertEquals("(!x * !y * !z) + (!x * y * !z) + (!x * y * z) + (x * y * z)", table1.getPDNF());
     }
+
     @org.junit.jupiter.api.Test
     void getPCNF() {
         String formula = "!((!y + !z) * !(!x * !z))";
@@ -88,5 +47,16 @@ class TruthTableTest {
         assertEquals("(!x * !y * !z) + (!x * y * !z) + (x * !y * !z) + (x * !y * z)", table1.getPDNF());
         assertEquals("(x + y + !z) * (x + !y + !z) * (!x + !y + z) * (!x + !y + !z)", table1.getPCNF());
     }
+
+    @org.junit.jupiter.api.Test
+    void otherLength() {
+        TruthTable table5 = new TruthTable("(y + z)");
+        assertEquals("(!y * z) + (y * !z) + (y * z)", table5.getPDNF());
+        assertEquals("(y + z)", table5.getPCNF());
+        assertEquals("+(1, 2, 3)", table5.getNumericPDNF());
+        assertEquals("*(0)", table5.getNumericPCNF());
+        assertEquals("f7(2)", table5.getIndexForm());
+    }
+
 
 }

@@ -1,14 +1,15 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 public class TruthTable {
     private final List<List<Boolean>> table = new ArrayList<>();
+    private Set<String> operands;
 
-    public void addRaw(Boolean... value) {
-        table.add(List.of(value));
+    public void addRaw(List<Boolean> value) {
+        table.add(value);
     }
-    
+
 
     public TruthTable(String formula) {
         getTruthTable(formula);
@@ -16,9 +17,10 @@ public class TruthTable {
 
     public String getPDNF() {
         StringBuilder result = new StringBuilder();
+        int numberOfOperands = operands.size();
 
         for (List<Boolean> raw : table) {
-            if (raw.get(3)) {
+            if (raw.get(numberOfOperands)) {
                 result.append(constructOnesConstituent(raw));
                 result.append(" + ");
             }
@@ -31,11 +33,11 @@ public class TruthTable {
 
     public String getNumericPDNF() {
         StringBuilder result = new StringBuilder("+()");
-        int counterOfRaws = 0;
+        int counterOfRaws = 0, numberOfOperands = operands.size();
 
         StringBuilder numericRepresentation = new StringBuilder();
         for (List<Boolean> raw : table) {
-            if (raw.get(3)) {
+            if (raw.get(numberOfOperands)) {
                 numericRepresentation.append(counterOfRaws).append(", ");
             }
             counterOfRaws++;
@@ -49,11 +51,13 @@ public class TruthTable {
     }
 
     public String getIndexForm() {
-        StringBuilder result = new StringBuilder("f(3)");
+        int numberOfOperands = operands.size();
+        StringBuilder result = new StringBuilder("f()");
+        result.insert(2, numberOfOperands);
 
         StringBuilder indexStringRepresentation = new StringBuilder();
         for (List<Boolean> raw  : table) {
-            indexStringRepresentation.append((raw.get(3) ? '1' : '0'));
+            indexStringRepresentation.append((raw.get(numberOfOperands) ? '1' : '0'));
         }
 
         int indexOfFunction = Integer.parseInt(indexStringRepresentation.toString(), 2);
@@ -64,12 +68,13 @@ public class TruthTable {
     }
 
     public String getNumericPCNF() {
+        int numberOfOperands = operands.size();
         StringBuilder result = new StringBuilder("*()");
         int counterOfRaws = 0;
 
         StringBuilder numericRepresentation = new StringBuilder();
         for (List<Boolean> raw : table) {
-            if (!raw.get(3)) {
+            if (!raw.get(numberOfOperands)) {
                 numericRepresentation.append(counterOfRaws).append(", ");
             }
             counterOfRaws++;
@@ -83,10 +88,11 @@ public class TruthTable {
 
     public String getPCNF() {
         StringBuilder result = new StringBuilder();
+        int numberOfOperands = operands.size();
 
         for (List<Boolean> raw : table) {
-            if (!raw.get(3)) {
-                result.append(constructZerosConstituent(raw));
+            if (!raw.get(numberOfOperands)) {
+                result.append(constructZerosConstituent(raw, operands));
                 result.append(" * ");
             }
         }
@@ -97,40 +103,42 @@ public class TruthTable {
 
     private String constructOnesConstituent(List<Boolean> truthTableRaw) {
         StringBuilder result = new StringBuilder("()");
+        int numberOfOperands = operands.size();
         int counterOfElementInRaw = 0;
 
         for (boolean element : truthTableRaw) {
-            if(counterOfElementInRaw == 3) break;
+            if(counterOfElementInRaw == numberOfOperands) break;
 
             StringBuilder elementConstruction = new StringBuilder();
-            elementConstruction.append(getColumnHeader(counterOfElementInRaw));
+            elementConstruction.append(getColumnHeader(counterOfElementInRaw, operands));
             if (!element) {
                 elementConstruction.insert(0, "!");
             }
 
             result.insert(result.length() - 1, elementConstruction);
-            if(counterOfElementInRaw != 2)
+            if(counterOfElementInRaw != numberOfOperands - 1)
                 result.insert(result.length() - 1, " * ");
 
             counterOfElementInRaw++;
         }
         return result.toString();
     }
-    private String constructZerosConstituent(List<Boolean> truthTableRaw) {
+    private String constructZerosConstituent(List<Boolean> truthTableRaw, Set<String> operands) {
         StringBuilder result = new StringBuilder("()");
+        int numberOfOperands = operands.size();
         int counterOfElementInRaw = 0;
 
         for (boolean element : truthTableRaw) {
-            if(counterOfElementInRaw == 3) break;
+            if(counterOfElementInRaw == numberOfOperands) break;
 
             StringBuilder elementConstruction = new StringBuilder();
-            elementConstruction.append(getColumnHeader(counterOfElementInRaw));
+            elementConstruction.append(getColumnHeader(counterOfElementInRaw, operands));
             if (element) {
                 elementConstruction.insert(0, "!");
             }
 
             result.insert(result.length() - 1, elementConstruction);
-            if(counterOfElementInRaw != 2)
+            if(counterOfElementInRaw != numberOfOperands - 1)
                 result.insert(result.length() - 1, " + ");
 
             counterOfElementInRaw++;
@@ -138,46 +146,71 @@ public class TruthTable {
         return result.toString();
     }
 
-    private String getColumnHeader(int counter){
-        return switch (counter) {
-            case 0 -> "x";
-            case 1 -> "y";
-            case 2 -> "z";
-            default -> "";
-        };
+    private String getColumnHeader(int counter, Set<String> operands){
+        return operands.stream().toList().get(counter);
     }
 
     public void getTruthTable(String initFormula) {
-        int numberOfRaws = (int) (Math.pow(2, 3));
+        this.operands = getOperands(initFormula);
+        int numberOfOperands = operands.size();
+        int numberOfRaws = (int) (Math.pow(2, numberOfOperands));
         int currentRaw = 0;
+
         while (currentRaw != numberOfRaws) {
-            StringBuilder value = new StringBuilder(Integer.toBinaryString(currentRaw));
-            while (value.length() != 3) {
-                value.insert(0, '0');
+            StringBuilder rawValue = new StringBuilder(Integer.toBinaryString(currentRaw));
+            while (rawValue.length() != numberOfOperands) {
+                rawValue.insert(0, '0');
             }
 
-            getTruthTableRawResult(initFormula, value.charAt(0) == '1', value.charAt(1) == '1', value.charAt(2) == '1');
+            List<Boolean> valuesInRaw = new ArrayList<>();
+            int positionInRaw = 0;
+            while (positionInRaw < numberOfOperands) {
+                valuesInRaw.add(rawValue.charAt(positionInRaw++) == '1');
+            }
+
+            getTruthTableRawResult(initFormula, valuesInRaw, operands);
             currentRaw++;
         }
     }
 
-    public boolean getTruthTableRawResult(String formula, boolean xValue, boolean yValue, boolean zValue) {
+    private static Set<String > getOperands(String initFormula) {
+        Set<String> operands = new TreeSet<>();
+        for (Character operand : initFormula.toCharArray()) {
+            if (operand == ' ' || operand == '(' || operand == ')' || operand == '!' || operand == '+' || operand == '*') {
+                continue;
+            }
+            operands.add(operand.toString());
+        }
+        return operands;
+    }
+
+    private void getTruthTableRawResult(String formula, List<Boolean> values, Set<String> operands) {
         StringBuilder processingFormula = new StringBuilder(formula);
-        int numberOfOperands = countOperandAppearance(processingFormula.toString(), 'x')
-                + countOperandAppearance(processingFormula.toString(), 'y')
-                + countOperandAppearance(processingFormula.toString(), 'z');
+        int numberOfUniqueOperands = values.size(), numberOfAllOperandsAppearance = 0;
+        int positionInRaw = 0;
 
-        changeCertainOperandInFormula(xValue, processingFormula, "x");
-        changeCertainOperandInFormula(yValue, processingFormula, "y");
-        changeCertainOperandInFormula(zValue, processingFormula, "z");
+        while (positionInRaw < numberOfUniqueOperands) {
+            numberOfAllOperandsAppearance += countOperandAppearance(processingFormula.toString(), operands.stream().toList().get(positionInRaw).charAt(0));
 
-        processingFormula = checkFormulaStructure(processingFormula.toString(), numberOfOperands);
+            changeCertainOperandInFormula(values.get(positionInRaw), processingFormula, operands.stream().toList().get(positionInRaw++));
+        }
+
+        processingFormula = checkFormulaStructure(processingFormula.toString(), numberOfAllOperandsAppearance);
 
         boolean result = Evaluator.evaluate(processingFormula.toString());
-        System.out.println((xValue ? "1 " : "0 ") + (yValue ? "1 " : "0 ") + (zValue ? "1 " : "0 ") + (result ? " 1" : " 0"));
-        addRaw(xValue, yValue, zValue, result);
+        values.add(result);
+        addRaw(values);
 
-        return result;
+        System.out.println(getStringRaw(values));
+    }
+
+    @NotNull
+    private static StringBuilder getStringRaw(List<Boolean> values) {
+        StringBuilder toPrint = new StringBuilder();
+        for (Boolean value : values) {
+            toPrint.append(value ? "1 " : "0 ");
+        }
+        return toPrint;
     }
 
     private static StringBuilder checkFormulaStructure(String formula, int numberOfOperands) {
