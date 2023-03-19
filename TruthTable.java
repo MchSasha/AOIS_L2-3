@@ -200,8 +200,15 @@ public class TruthTable {
         boolean result = Evaluator.evaluate(processingFormula.toString());
         values.add(result);
         addRaw(values);
+    }
 
-        System.out.println(getStringRaw(values));
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        for (List<Boolean> row : table) {
+            result.append(getStringRaw(row)).append('\n');
+        }
+        return result.toString();
     }
 
     @NotNull

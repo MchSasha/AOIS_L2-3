@@ -5,6 +5,7 @@ public class Main {
         String initFormula = "!((!y + !z) * !(!x * !z))";
 
         TruthTable table = new TruthTable(initFormula);
+        System.out.println(table);
         System.out.println("PDNF --- " + table.getPDNF());
         System.out.println("PCNF --- " + table.getPCNF());
         System.out.println("Numeric form PDNF --- " + table.getNumericPDNF());
@@ -13,6 +14,7 @@ public class Main {
 
         System.out.println();
         TruthTable table5 = new TruthTable("(y + z)");
+        System.out.println(table5);
         System.out.println("PDNF --- " + table5.getPDNF());
         System.out.println("PCNF --- " + table5.getPCNF());
         System.out.println("Numeric form PDNF --- " + table5.getNumericPDNF());
