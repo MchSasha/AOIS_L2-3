@@ -1,12 +1,76 @@
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Minimization {
-    public String getSCNF(String PCNF) {
+    public String getQuineMcCluskeyCNF(String PCNF) {
+        String groupOperator = " \\+ ";
+        List<List<String>> constituentOperands = getOperands(PCNF, groupOperator);
+        List<List<List<String>>> allGroupingVariants = getAllGroupingVariants(constituentOperands);
+        List<List<String>> shortenedForm = getShortenedForm(allGroupingVariants, constituentOperands);
+
+        if (shortenedForm.isEmpty()) {
+            return PCNF;
+        }
+
+        List<List<Boolean>> quineMcCluskeyTable = getQuineMcCluskeyTable(constituentOperands, shortenedForm);
+
+        calculateDeadEndForm(shortenedForm, quineMcCluskeyTable);
+
+        shortenedForm.addAll(getIrreducibleConstituents(constituentOperands, shortenedForm));
+
+        return constructFormula(shortenedForm, groupOperator);
+    }
+
+    private void calculateDeadEndForm(List<List<String>> shortenedForm, List<List<Boolean>> quineMcCluskeyTable) {
+        for (int rowIter = 0; rowIter < quineMcCluskeyTable.size(); rowIter++) {
+            List<List<Boolean>> incompleteVariantOfTable = new ArrayList<>(quineMcCluskeyTable);
+            incompleteVariantOfTable.remove(rowIter);
+
+            if (hasEmptyColumns(incompleteVariantOfTable)) {
+                continue;
+            }
+            shortenedForm.remove(rowIter);
+        }
+    }
+
+    private Boolean hasEmptyColumns(List<List<Boolean>> incompleteVariantOfTable) {
+        for (int columnIter = 0; columnIter < incompleteVariantOfTable.get(0).size(); columnIter++) {
+
+            int emptyFieldCounter = 0;
+            for (List<Boolean> row : incompleteVariantOfTable) {
+                if (row.get(columnIter)) {
+                    break;
+                }
+                emptyFieldCounter++;
+            }
+            if (emptyFieldCounter == incompleteVariantOfTable.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<List<Boolean>> getQuineMcCluskeyTable(List<List<String>> constituentOperands, List<List<String>> shortenedForm) {
+        List<List<Boolean>> quineMcCluskeyTable = new ArrayList<>();
+
+        for (List<String> implicant : shortenedForm) {
+            quineMcCluskeyTable.add(new ArrayList<>(constituentOperands.size()));
+
+            for (List<String> constituent : constituentOperands) {
+                int implicantIndex = shortenedForm.indexOf(implicant);
+
+                if (new HashSet<>(constituent).containsAll(implicant)) {
+                    quineMcCluskeyTable.get(implicantIndex).add(true);
+                } else quineMcCluskeyTable.get(implicantIndex).add(false);
+            }
+        }
+        return quineMcCluskeyTable;
+    }
+
+
+    /////////////////////////////////////constituent and implicant
+    public String getCalculationCNF(String PCNF) {                 /////////////////////////name
         String groupOperator = " \\+ ";
         List<List<String>> constituentOperands = getOperands(PCNF, groupOperator);
         List<List<List<String>>> allGroupingVariants = getAllGroupingVariants(constituentOperands);
@@ -17,12 +81,32 @@ public class Minimization {
         }
 
         String referenceFormulaResult = new TruthTable(PCNF).getIndexForm();
-        getDeadEndForm(shortenedForm, groupOperator, referenceFormulaResult);
+        calculateDeadEndForm(shortenedForm, groupOperator, referenceFormulaResult);
+
+        shortenedForm.addAll(getIrreducibleConstituents(constituentOperands, shortenedForm));
+
+        printInfo(constituentOperands, allGroupingVariants, shortenedForm);                                             //////////////
 
         return constructFormula(shortenedForm, groupOperator);
     }
 
-    private void getDeadEndForm(List<List<String>> shortenedForm, String groupOperator, String referenceFormulaResult) {
+    private List<List<String>> getIrreducibleConstituents(List<List<String>> constituentOperands, List<List<String>> shortenedForm) {
+        List<List<String>> irreducibleConstituents = new ArrayList<>();
+
+        for (List<String> constituent : constituentOperands) {
+            for (int iter = 0; iter < shortenedForm.size(); iter++) {
+                List<String> implicant = shortenedForm.get(iter);
+
+                if (new HashSet<>(constituent).containsAll(implicant)) break;
+
+                if(iter+1 == shortenedForm.size()) irreducibleConstituents.add(constituent);
+            }
+        }
+
+        return irreducibleConstituents;
+    }
+
+    private void calculateDeadEndForm(List<List<String>> shortenedForm, String groupOperator, String referenceFormulaResult) {
         for (int iter = 0; iter < shortenedForm.size(); iter++) {
             List<List<String>> incompleteVariant = new ArrayList<>(shortenedForm);
             incompleteVariant.remove(iter);
@@ -119,9 +203,9 @@ public class Minimization {
         List<List<String>> constituentOperands = new ArrayList<>();
 
         while(groupCounter < formula.length()) {
-            String constituent = getFromParentheses(formula, groupCounter);
+            String constituent = removeParentheses(formula, groupCounter);
 
-            if (endOfTheString(formula, groupCounter, constituent)) break;
+            if (isEndOfTheString(formula, groupCounter, constituent)) break;
 
             groupCounter += constituent.length() + 2;
 
@@ -133,12 +217,12 @@ public class Minimization {
         return constituentOperands;
     }
 
-    private static boolean endOfTheString(String formula, int groupCounter, String constituent) {
+    private boolean isEndOfTheString(String formula, int groupCounter, String constituent) {
         return groupCounter + constituent.length() + 2 >= formula.length();
     }
 
     @NotNull
-    private static String getFromParentheses(String formula, int groupCounter) {
+    private String removeParentheses(String formula, int groupCounter) {
         return formula.substring(formula.indexOf('(', groupCounter) + 1, formula.indexOf(')', formula.indexOf('(', groupCounter) + 1));
     }
 
