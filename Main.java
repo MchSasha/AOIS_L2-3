@@ -1,24 +1,21 @@
+import minimization.Minimization;
+import truthtable.TruthTable;
+
 public class Main {
-//вариант 17 --- !((!y + !z) * !(!x * !z))
+//вариант 17 --- !((!y + !z) * !(!x * !z))   !((!y + !z) + !(!x * z))     !((!y + !z) + !(!x * !z)) -- 0
     public static void main(String[] args) {
 
-        String initFormula = "!((!y + !z) * !(!x * !z))";
+        String initFormula = "((y * z) * (x * !z))";
 
         TruthTable table = new TruthTable(initFormula);
-        System.out.println(table);
-        System.out.println("PDNF --- " + table.getPDNF());
-        System.out.println("PCNF --- " + table.getPCNF());
-        System.out.println("Numeric form PDNF --- " + table.getNumericPDNF());
-        System.out.println("Numeric form PCNF --- " + table.getNumericPCNF());
-        System.out.println("Index form --- " + table.getIndexForm());
+        System.out.println("Truth table --- \n" + table);
+        String PDNF = table.getPDNF();
+        String PCNF = table.getPCNF();
+        System.out.println("PDNF --- " + PDNF);
+        System.out.println("PCNF --- " + PCNF);
 
-        System.out.println();
-        TruthTable table5 = new TruthTable("(y + z)");
-        System.out.println(table5);
-        System.out.println("PDNF --- " + table5.getPDNF());
-        System.out.println("PCNF --- " + table5.getPCNF());
-        System.out.println("Numeric form PDNF --- " + table5.getNumericPDNF());
-        System.out.println("Numeric form PCNF --- " + table5.getNumericPCNF());
-        System.out.println("Index form --- " + table5.getIndexForm());
+        System.out.println(" Veitch-Karnaugh Method --- ");
+        System.out.println(Minimization.getVeitchKarnaughDNF(PCNF));
+        System.out.println(Minimization.getVeitchKarnaughCNF(PDNF));
     }
 }
