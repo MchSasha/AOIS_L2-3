@@ -1,3 +1,5 @@
+package truthtable;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -6,10 +8,23 @@ public class TruthTable {
     private final List<List<Boolean>> table = new ArrayList<>();
     private Set<String> operands;
 
+
     public void addRaw(List<Boolean> value) {
         table.add(value);
     }
 
+
+    public int getOperandsNumber() {
+        return operands.size();
+    }
+
+    public Set<String> getOperands() {
+        return operands;
+    }
+
+    public List<Boolean> getRow(int index) {
+        return table.get(index);
+    }
 
     public TruthTable(String formula) {
         getTruthTable(formula);
@@ -51,6 +66,7 @@ public class TruthTable {
     }
 
     public String getIndexForm() {
+        if(table.isEmpty()) return "";
         int numberOfOperands = operands.size();
         StringBuilder result = new StringBuilder("f()");
         result.insert(2, numberOfOperands);
@@ -150,7 +166,8 @@ public class TruthTable {
         return operands.stream().toList().get(counter);
     }
 
-    public void getTruthTable(String initFormula) {
+    private void getTruthTable(String initFormula) {
+        if(initFormula.isEmpty()) return;
         this.operands = getOperands(initFormula);
         int numberOfOperands = operands.size();
         int numberOfRaws = (int) (Math.pow(2, numberOfOperands));
@@ -212,7 +229,7 @@ public class TruthTable {
     }
 
     @NotNull
-    private static StringBuilder getStringRaw(List<Boolean> values) {
+    public static StringBuilder getStringRaw(List<Boolean> values) {
         StringBuilder toPrint = new StringBuilder();
         for (Boolean value : values) {
             toPrint.append(value ? "1 " : "0 ");
