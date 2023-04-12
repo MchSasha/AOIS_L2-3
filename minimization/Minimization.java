@@ -7,8 +7,12 @@ import java.util.*;
 
 public class Minimization {
 
-    public static String getVeitchKarnaughCNF(String PCNF) {
-        TruthTable formulaTruthTable = new TruthTable(PCNF);
+    public static String getVeitchKarnaughCNF(String pcnf) {
+        if (pcnf.isEmpty()) return "";
+        TruthTable formulaTruthTable = new TruthTable(pcnf);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ZERO_INDEX)) return String.valueOf(0);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ONE_INDEX)) return String.valueOf(1);
+
         int numberOfOperands = formulaTruthTable.getOperandsNumber();
         int columnOperandsNumber = numberOfOperands / 2;
         int rowOperandsNumber = numberOfOperands - columnOperandsNumber;
@@ -25,13 +29,17 @@ public class Minimization {
         getShortenedForm(formulaTruthTable, shortenedForm, combinations, false);
 
         if (shortenedForm.isEmpty()) {
-            return PCNF;
+            return pcnf;
         }
 
         return constructFormula(shortenedForm, groupOperator);
     }
-    public static String getVeitchKarnaughDNF(String PDNF) {
-        TruthTable formulaTruthTable = new TruthTable(PDNF);
+    public static String getVeitchKarnaughDNF(String pdnf) {
+        if (pdnf.isEmpty()) return "";
+        TruthTable formulaTruthTable = new TruthTable(pdnf);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ZERO_INDEX)) return String.valueOf(0);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ONE_INDEX)) return String.valueOf(1);
+
         int numberOfOperands = formulaTruthTable.getOperandsNumber();
         int columnOperandsNumber = numberOfOperands / 2;
         int rowOperandsNumber = numberOfOperands - columnOperandsNumber;
@@ -48,7 +56,7 @@ public class Minimization {
         getShortenedForm(formulaTruthTable, shortenedForm, combinations, true);
 
         if (shortenedForm.isEmpty()) {
-            return PDNF;
+            return pdnf;
         }
 
         return constructFormula(shortenedForm, groupOperator);
@@ -356,8 +364,8 @@ public class Minimization {
         return veitchKarnaughTable;
     }
 
-    static String getGreyCode(int myNum, int numOfBits) {
-        if (numOfBits == 1) {
+    public static String getGreyCode(int myNum, int numOfBits) {
+        if (numOfBits <= 1) {
             return String.valueOf(myNum);
         }
 
@@ -369,14 +377,14 @@ public class Minimization {
     }
 
 
-    public static String getQuineMcCluskeyCNF(String PCNF) {
+    public static String getQuineMcCluskeyCNF(String pcnf) {
         String groupOperator = " \\+ ";
-        List<List<String>> constituentOperands = getOperands(PCNF, groupOperator);
+        List<List<String>> constituentOperands = getOperands(pcnf, groupOperator);
         List<List<List<String>>> allGroupingVariants = getAllGroupingVariants(constituentOperands);
         List<List<String>> shortenedForm = getShortenedForm(allGroupingVariants, constituentOperands);
 
         if (shortenedForm.isEmpty()) {
-            return PCNF;
+            return pcnf;
         }
 
         List<List<Boolean>> quineMcCluskeyTable = getQuineMcCluskeyTable(constituentOperands, shortenedForm);
@@ -438,17 +446,17 @@ public class Minimization {
     }
 
 
-    public static String getCalculationCNF(String PCNF) {
+    public static String getCalculationCNF(String pcnf) {
         String groupOperator = " \\+ ";
-        List<List<String>> constituentOperands = getOperands(PCNF, groupOperator);
+        List<List<String>> constituentOperands = getOperands(pcnf, groupOperator);
         List<List<List<String>>> allGroupingVariants = getAllGroupingVariants(constituentOperands);
         List<List<String>> shortenedForm = getShortenedForm(allGroupingVariants, constituentOperands);
 
         if (shortenedForm.isEmpty()) {
-            return PCNF;
+            return pcnf;
         }
 
-        String referenceFormulaResult = new TruthTable(PCNF).getIndexForm();
+        String referenceFormulaResult = new TruthTable(pcnf).getIndexForm();
         calculateDeadEndForm(shortenedForm, groupOperator, referenceFormulaResult);
 
         shortenedForm.addAll(getIrreducibleConstituents(constituentOperands, shortenedForm));
@@ -594,31 +602,31 @@ public class Minimization {
         return formula.substring(formula.indexOf('(', groupCounter) + 1, formula.indexOf(')', formula.indexOf('(', groupCounter) + 1));
     }
 
-    public static String getCalculationDNF(String PDNF) {
+    public static String getCalculationDNF(String pdnf) {
         String groupOperator = " \\* ";
-        List<List<String>> constituentOperands = getOperands(PDNF, groupOperator);
+        List<List<String>> constituentOperands = getOperands(pdnf, groupOperator);
         List<List<List<String>>> allGroupingVariants = getAllGroupingVariants(constituentOperands);
         List<List<String>> shortenedForm = getShortenedForm(allGroupingVariants, constituentOperands);
 
         if (shortenedForm.isEmpty()) {
-            return PDNF;
+            return pdnf;
         }
 
-        String referenceFormulaResult = new TruthTable(PDNF).getIndexForm();
+        String referenceFormulaResult = new TruthTable(pdnf).getIndexForm();
         calculateDeadEndForm(shortenedForm, groupOperator, referenceFormulaResult);
 
         shortenedForm.addAll(getIrreducibleConstituents(constituentOperands, shortenedForm));
 
         return constructFormula(shortenedForm, groupOperator);
     }
-    public static String getQuineMcCluskeyDNF(String PDNF) {
+    public static String getQuineMcCluskeyDNF(String pdnf) {
         String groupOperator = " \\* ";
-        List<List<String>> constituentOperands = getOperands(PDNF, groupOperator);
+        List<List<String>> constituentOperands = getOperands(pdnf, groupOperator);
         List<List<List<String>>> allGroupingVariants = getAllGroupingVariants(constituentOperands);
         List<List<String>> shortenedForm = getShortenedForm(allGroupingVariants, constituentOperands);
 
         if (shortenedForm.isEmpty()) {
-            return PDNF;
+            return pdnf;
         }
 
         List<List<Boolean>> quineMcCluskeyTable = getQuineMcCluskeyTable(constituentOperands, shortenedForm);

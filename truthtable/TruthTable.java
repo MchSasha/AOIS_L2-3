@@ -5,8 +5,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class TruthTable {
+    public static final String ZERO_INDEX = "f0(3)";
+    public static final String ONE_INDEX = "f255(3)";
+
     private final List<List<Boolean>> table = new ArrayList<>();
-    private Set<String> operands;
+    private Set<String> operands = new HashSet<>();
 
 
     public void addRaw(List<Boolean> value) {

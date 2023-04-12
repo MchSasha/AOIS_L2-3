@@ -1,6 +1,7 @@
 package truthtable;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class Evaluator {
 
@@ -21,9 +22,9 @@ public class Evaluator {
         };
     }
 
-    public static boolean evaluate(String formula) {
-        Stack<Boolean> values = new Stack<>();
-        Stack<Character> operators = new Stack<>();
+    public static boolean evaluate(String formula) {//Deque<Integer> stack = new ArrayDeque<Integer>();
+        Deque<Boolean> values = new ArrayDeque<>();
+        Deque<Character> operators = new ArrayDeque<>();
 
         for (int iter = 0; iter < formula.length(); iter++) {
             char character = formula.charAt(iter);
@@ -46,7 +47,7 @@ public class Evaluator {
         return values.pop();
     }
 
-    private static void processOperand(char character, Stack<Boolean> values) {
+    private static void processOperand(char character, Deque<Boolean> values) {
         if (character == 't') {
             values.push(true);
         } else if (character == 'f') {
@@ -54,8 +55,8 @@ public class Evaluator {
         }
     }
 
-    private static void processOperator(char character, Stack<Boolean> values, Stack<Character> operators) {
-        while (!operators.empty() && hasPrecedence(operators.peek(), character)) {
+    private static void processOperator(char character, Deque<Boolean> values, Deque<Character> operators) {
+        while (!operators.isEmpty() && hasPrecedence(operators.peek(), character)) {
             char operator = operators.pop();
             if (operator == '!') {
                 processNegation(values);
@@ -66,19 +67,19 @@ public class Evaluator {
         operators.push(character);
     }
 
-    private static void processNegation(Stack<Boolean> values) {
+    private static void processNegation(Deque<Boolean> values) {
         boolean aValue = values.pop();
         values.push(applyOperator('!', aValue, false));
     }
 
-    private static void handleBinaryOperator(Stack<Boolean> values, char operator) {
+    private static void handleBinaryOperator(Deque<Boolean> values, char operator) {
         boolean bValue = values.pop();
         boolean aValue = values.pop();
         values.push(applyOperator(operator, aValue, bValue));
     }
 
-    private static void processParentheses(Stack<Boolean> values, Stack<Character> operators) {
-        while (!operators.empty() && operators.peek() != '(') {
+    private static void processParentheses(Deque<Boolean> values, Deque<Character> operators) {
+        while (!operators.isEmpty() && operators.peek() != '(') {
             char operator = operators.pop();
             if (operator == '!') {
                 processNegation(values);
@@ -89,8 +90,8 @@ public class Evaluator {
         operators.pop();
     }
 
-    private static void processOther(Stack<Boolean> values, Stack<Character> operators) {
-        while (!operators.empty()) {
+    private static void processOther(Deque<Boolean> values, Deque<Character> operators) {
+        while (!operators.isEmpty()) {
             char operator = operators.pop();
             if (operator == '!') {
                 processNegation(values);
