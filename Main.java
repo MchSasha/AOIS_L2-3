@@ -1,22 +1,95 @@
 import minimization.Minimization;
 import truthtable.TruthTable;
 
+
 public class Main {
-//вариант 17 --- !((!y + !z) * !(!x * !z))   !((!y + !z) + !(!x * z))     !((!y + !z) + !(!x * !z)) -- 0
     public static void main(String[] args) {
 
-        String initFormula = "!((!y + !z) + !(!x * !z))";
-        TruthTable table = new TruthTable(initFormula);
-        System.out.println("Truth table --- \n" + table);
-        String pdnf = table.getPDNF();
-        String pcnf = table.getPCNF();
-        System.out.println("PDNF --- " + pdnf);
-        System.out.println("PCNF --- " + pcnf);
+        String inputForTable = "x+y+z+m";
+        getY4minimization(inputForTable);
 
-        System.out.println(" Veitch-Karnaugh Method --- ");
-        System.out.println(Minimization.getVeitchKarnaughDNF(pdnf));
-        System.out.println(Minimization.getVeitchKarnaughCNF(pcnf));
+        getY3minimization(inputForTable);
+
+        getY2minimization(inputForTable);
+
+        getY1Minimization(inputForTable);
+    }
+
+    private static void getY1Minimization(String a) {
+        int tableIter1;
+        int tableIter2;
+        TruthTable table = new TruthTable(a);
+        tableIter2 = 10;
+        while (tableIter2 > 0) {
+            table.getTable().get(tableIter2--).set(4, false);
+            table.getTable().get(tableIter2--).set(4, true);
+        }
+        tableIter1 = 16;
+        while (tableIter1-- > 10) {
+            table.getTable().get(tableIter1).set(4, null);
+        }
+        table.getTable().get(11).set(4, true);
+        table.getTable().get(13).set(4, true);
+        table.getTable().get(15).set(4, true);
+        System.out.println("x y z m Y1");
+        System.out.println(table);
+        System.out.println(Minimization.getCalculationDNF(Minimization.getQuineMcCluskeyDNF(Minimization.getVeitchKarnaughDNF(a, table))));
+    }
+
+    private static void getY2minimization(String a) {
+        int tableIter1 = 2;
+        int tableIter2;
+        int tableIter4 = 2;
+        TruthTable table = new TruthTable(a);
+        while (tableIter1-- > 0) table.getTable().get(tableIter1).set(4, true);
+        while (tableIter4-- > 0) table.getTable().get(2 + tableIter4).set(4, false);
+        tableIter2 = 2;
+        while (tableIter2-- > 0) table.getTable().get(tableIter2 + 4).set(4, true);
+        tableIter2 = 2;
+        while (tableIter2-- > 0) table.getTable().get(tableIter2 + 6).set(4, false);
+        tableIter2 = 2;
+        while (tableIter2-- > 0) table.getTable().get(tableIter2 + 8).set(4, true);
+        tableIter4 = 16;
+        while (tableIter4-- > 10) table.getTable().get(tableIter4).set(4, null);
+        table.getTable().get(12).set(4, true);
+        table.getTable().get(13).set(4, true);
+        System.out.println("x y z m Y2");
+        System.out.println(table);
+        System.out.println(Minimization.getCalculationDNF(Minimization.getQuineMcCluskeyDNF(Minimization.getVeitchKarnaughDNF(a, table))));
+    }
+
+    private static void getY3minimization(String a) {
+        int tableIter1;
+        int tableIter2 = 2;
+        int tableIter3 = 4;
+        TruthTable table1 = new TruthTable(a);
+        while (tableIter2-- > 0) table1.getTable().get(tableIter2).set(4, true);
+        while (tableIter3-- > 0) table1.getTable().get(2 + tableIter3).set(4, false);
+        int tableIter4 = 4;
+        while (tableIter4-- > 0) table1.getTable().get(tableIter4 + 6).set(4, true);
+        tableIter1 = 16;
+        while (tableIter1-- > 10) table1.getTable().get(tableIter1).set(4, null);
+
+        table1.getTable().get(10).set(4, false);
+        table1.getTable().get(11).set(4, false);
+        table1.getTable().get(12).set(4, false);
+        table1.getTable().get(13).set(4, false);
+        System.out.println("x y z m Y3");
+        System.out.println(table1);
+        System.out.println(Minimization.getCalculationCNF(Minimization.getQuineMcCluskeyCNF(Minimization.getVeitchKarnaughCNF(a, table1))));
+    }
+
+    private static void getY4minimization(String a) {
+        TruthTable table = new TruthTable(a);
+
+        int tableIter1 = 2, tableIter2 = 7;
+        while (tableIter1-- > 0) table.getTable().get(tableIter1).set(4, false);
+        while (tableIter2-- > 0) table.getTable().get(2 + tableIter2).set(4, true);
+        int tableIter3 = 16;
+        while (tableIter3-- > 10) table.getTable().get(tableIter3).set(4, null);
+
+        System.out.println("x y z m Y4");
+        System.out.println(table);
+        System.out.println(Minimization.getCalculationCNF(Minimization.getVeitchKarnaughCNF(a, table)));
     }
 }
-
-/*(a + b + p) * (a +b + !p) * (a + !b + p) * (!a + b + p)*/
