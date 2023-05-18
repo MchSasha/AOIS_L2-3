@@ -204,6 +204,11 @@ public class TruthTable {
         return operands;
     }
 
+    public List<List<Boolean>> getTable() {
+        return table;
+    }
+
+
     private void getTruthTableRawResult(String formula, List<Boolean> values, Set<String> operands) {
         StringBuilder processingFormula = new StringBuilder(formula);
         int numberOfUniqueOperands = values.size(), numberOfAllOperandsAppearance = 0;
@@ -235,6 +240,9 @@ public class TruthTable {
     public static StringBuilder getStringRaw(List<Boolean> values) {
         StringBuilder toPrint = new StringBuilder();
         for (Boolean value : values) {
+            if(value == null) {
+                continue;
+            }
             toPrint.append(value ? "1 " : "0 ");
         }
         return toPrint;

@@ -22,7 +22,7 @@ public class Evaluator {
         };
     }
 
-    public static boolean evaluate(String formula) {//Deque<Integer> stack = new ArrayDeque<Integer>();
+    public static boolean evaluate(String formula) {
         Deque<Boolean> values = new ArrayDeque<>();
         Deque<Character> operators = new ArrayDeque<>();
 

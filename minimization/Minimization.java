@@ -1,7 +1,6 @@
 package minimization;
 import truthtable.TruthTable;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -62,6 +61,61 @@ public class Minimization {
         return constructFormula(shortenedForm, groupOperator);
     }
 
+    public static String getVeitchKarnaughCNF(String pcnf, TruthTable truthTable) {
+        if (pcnf.isEmpty()) return "";
+        TruthTable formulaTruthTable = new TruthTable(pcnf);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ZERO_INDEX)) return String.valueOf(0);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ONE_INDEX)) return String.valueOf(1);
+
+        int numberOfOperands = formulaTruthTable.getOperandsNumber();
+        int columnOperandsNumber = numberOfOperands / 2;
+        int rowOperandsNumber = numberOfOperands - columnOperandsNumber;
+        String groupOperator = " \\+ ";
+
+        List<List<Boolean>> veitchKarnaughTable = getVeitchKarnaughTableFor8421(truthTable, numberOfOperands, columnOperandsNumber, rowOperandsNumber);
+
+        List<List<String>> shortenedForm = new ArrayList<>();
+        List<List<String>> combinations = new ArrayList<>();
+        Set<List<Integer>> visitedFields = new HashSet<>();
+
+        findAllShapesInTable(numberOfOperands, veitchKarnaughTable, combinations, visitedFields, false);
+
+        getShortenedForm(formulaTruthTable, shortenedForm, combinations, false);
+
+        if (shortenedForm.isEmpty()) {
+            return pcnf;
+        }
+
+        return constructFormula(shortenedForm, groupOperator);
+    }
+    public static String getVeitchKarnaughDNF(String pdnf, TruthTable truthTable) {
+        if (pdnf.isEmpty()) return "";
+        TruthTable formulaTruthTable = new TruthTable(pdnf);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ZERO_INDEX)) return String.valueOf(0);
+        if (Objects.equals(formulaTruthTable.getIndexForm(), TruthTable.ONE_INDEX)) return String.valueOf(1);
+
+        int numberOfOperands = formulaTruthTable.getOperandsNumber();
+        int columnOperandsNumber = numberOfOperands / 2;
+        int rowOperandsNumber = numberOfOperands - columnOperandsNumber;
+        String groupOperator = " * ";
+
+        List<List<Boolean>> veitchKarnaughTable = getVeitchKarnaughTableFor8421(truthTable, numberOfOperands, columnOperandsNumber, rowOperandsNumber);
+
+        List<List<String>> shortenedForm = new ArrayList<>();
+        List<List<String>> combinations = new ArrayList<>();
+        Set<List<Integer>> visitedFields = new HashSet<>();
+
+        findAllShapesInTable(numberOfOperands, veitchKarnaughTable, combinations, visitedFields, true);
+
+        getShortenedForm(formulaTruthTable, shortenedForm, combinations, true);
+
+        if (shortenedForm.isEmpty()) {
+            return pdnf;
+        }
+
+        return constructFormula(shortenedForm, groupOperator);
+    }
+
     private static void getShortenedForm(TruthTable formulaTruthTable, List<List<String>> shortenedForm, List<List<String>> allCombinationsOfShapes,
                                          boolean value) {
         char valueToConvert = (value) ? '0' : '1';
@@ -106,25 +160,30 @@ public class Minimization {
         int minPower = maxPower / 2;
         int numberOfCertainValueInTable = getNumberOfCertainValue(veitchKarnaughTable, value);
 
-        while (visitedFields.size() != numberOfCertainValueInTable) {
+        while (visitedFields.size() < numberOfCertainValueInTable) {
+            findVerticalRectangles(maxPower, veitchKarnaughTable, combinations, visitedFields, value);
             findHorizontalRectangles(maxPower, veitchKarnaughTable, combinations, visitedFields, value);
+
 
             findSquares(minPower, veitchKarnaughTable, combinations, visitedFields, value);
 
             findVerticalRectangles(minPower, veitchKarnaughTable, combinations, visitedFields, value);
+
             findHorizontalRectangles(minPower, veitchKarnaughTable, combinations, visitedFields, value);
 
             findFurtherField(veitchKarnaughTable, combinations, visitedFields, value);
 
             maxPower /= 2;
+            minPower /= 2;
         }
     }
 
-    private static int getNumberOfCertainValue(List<List<Boolean>> veitchKarnaughTable, boolean value) {
+
+    private static int getNumberOfCertainValue(List<List<Boolean>> veitchKarnaughTable, Boolean value) {
         int valueCounter = 0;
 
         for (List<Boolean> row : veitchKarnaughTable) {
-            for (boolean currentValue : row) {
+            for (Boolean currentValue : row) {
                 if (currentValue == value) {
                     valueCounter++;
                 }
@@ -141,7 +200,7 @@ public class Minimization {
 
         for (int row = 0; row < numOfRows; row++) {
             for (int column = 0; column < numOfColumns; column++) {
-                if (veitchKarnaughTable.get(row).get(column) != value) continue;
+                if (veitchKarnaughTable.get(row).get(column) != (Boolean) value) continue;
 
                 List<Integer> field = List.of(row, column);
 
@@ -149,7 +208,7 @@ public class Minimization {
 
                 visitedFields.add(field);
 
-                String combination = getGreyCode(row, 1) + getGreyCode(column, 2);
+                String combination = getGreyCode(row, 2) + getGreyCode(column, 2);
                 combinationsToGlue.add(Collections.singletonList(combination));
             }
         }
@@ -162,7 +221,7 @@ public class Minimization {
 
         for (int row = 0; row < numOfRows; row++) {
             for (int column = 0; column < numOfColumns; column++) {
-                if (veitchKarnaughTable.get(row).get(column) != value) continue;
+                if (veitchKarnaughTable.get(row).get(column) != (Boolean) value) continue;
 
                 List<List<Integer>> rectangle = isVerticalRectangle(degree, row, column, numOfRows, numOfColumns, veitchKarnaughTable, value);
 
@@ -173,7 +232,7 @@ public class Minimization {
 
                 List<String> combinationsOfCertainShape = new ArrayList<>();
                 for(var rec : rectangle){
-                    String combination = getGreyCode(rec.get(0), 1) + getGreyCode(rec.get(1), 2);
+                    String combination = getGreyCode(rec.get(0), 2) + getGreyCode(rec.get(1), 2);
                     combinationsOfCertainShape.add(combination);
                 }
                 combinationsToGlue.add(combinationsOfCertainShape);
@@ -189,7 +248,7 @@ public class Minimization {
         List<List<Integer>> rectangle = new ArrayList<>();
         for (int row = startRow; row < startRow + degree; row++) {
             for (int col = startCol; col <= startCol; col++) {
-                if (veitchKarnaughTable.get(row).get(col) != value) return new ArrayList<>();
+                if (veitchKarnaughTable.get(row).get(col) != (Boolean) value) return new ArrayList<>();
 
                 int colInExtendedTable = col;
                 if (colInExtendedTable >= veitchKarnaughTable.get(0).size()) {
@@ -204,7 +263,7 @@ public class Minimization {
 
 
     public static void findHorizontalRectangles(int degree, List<List<Boolean>> veitchKarnaughTable, List<List<String>> combinationsOfCertainShape,
-                                                Set<List<Integer>> visitedFields, boolean value) {
+                                                Set<List<Integer>> visitedFields, Boolean value) {
         List<List<Boolean>> extendedTable = createExtendedTable(veitchKarnaughTable);
 
         int numRows = extendedTable.size();
@@ -222,7 +281,7 @@ public class Minimization {
                 visitedFields.addAll(rectangle);
                 List<String> combination = new ArrayList<>();
                 for(var rec : rectangle){
-                    combination.add(getGreyCode(rec.get(0), 1) + getGreyCode(rec.get(1), 2));
+                    combination.add(getGreyCode(rec.get(0), 2) + getGreyCode(rec.get(1), 2));
                 }
                 combinationsOfCertainShape.add(combination);
 
@@ -241,6 +300,9 @@ public class Minimization {
         for (var row : table) {
             row.add(row.get(0));
         }
+
+        table.add(table.get(0));
+
         return table;
     }
 
@@ -273,7 +335,7 @@ public class Minimization {
 
         for (int row = 0; row < numRows; row++) {
             for (int col = 0; col < numCols; col++) {
-                if (extendedTable.get(row).get(col) != value) continue;
+                if (extendedTable.get(row).get(col) != (Boolean) value) continue;
                 List<List<Integer>> rectangle = isSquare(degree, row, col, numRows, numCols, veitchKarnaughTable, value);
 
                 if (rectangle.isEmpty())  continue;
@@ -281,7 +343,7 @@ public class Minimization {
                 visitedFields.addAll(rectangle);
                 List<String> combination = new ArrayList<>();
                 for(var rec : rectangle){
-                    combination.add(getGreyCode(rec.get(0), 1) + getGreyCode(rec.get(1), 2));
+                    combination.add(getGreyCode(rec.get(0), 2) + getGreyCode(rec.get(1), 2));
                 }
                 combinationsOfCertainShape.add(combination);
             }
@@ -297,7 +359,7 @@ public class Minimization {
 
         for (int row = startRow; row <= startRow; row++) {
             for (int col = startCol; col < startCol + degree; col++) {
-                if (extendedTable.get(row).get(col) != value) return new ArrayList<>();
+                if (extendedTable.get(row).get(col) !=  (Boolean) value) return new ArrayList<>();
 
                 int rowInExtendedTable = row;
                 int colInExtendedTable = col;
@@ -323,7 +385,7 @@ public class Minimization {
 
         for (int row = startRow; row < startRow + degree; row++) {
             for (int col = startCol; col < startCol + degree; col++) {
-                if (extendedTable.get(row).get(col) != value) return new ArrayList<>();
+                if (extendedTable.get(row).get(col) != (Boolean) value) return new ArrayList<>();
 
                 int rowInExtendedTable = row;
                 int colInExtendedTable = col;
@@ -356,6 +418,29 @@ public class Minimization {
                 int indexOfCombinationInTruthTable = Integer.parseInt(valuesCombination, 2);
 
                 boolean valuesCombinationResult = formulaTruthTable.getRow(indexOfCombinationInTruthTable).get(numberOfOperands);
+
+                rowInVeitchKarnaughTable.add(valuesCombinationResult);
+            }
+            veitchKarnaughTable.add(rowInVeitchKarnaughTable);
+        }
+        return veitchKarnaughTable;
+    }
+    private static List<List<Boolean>> getVeitchKarnaughTableFor8421(TruthTable formulaTruthTable, int numberOfOperands, int columnOperandsNumber,
+                                                              int rowOperandsNumber) {
+        List<List<Boolean>> veitchKarnaughTable = new ArrayList<>();
+        int columnSize = (int) Math.pow(2, columnOperandsNumber);
+        int rowSize = (int) Math.pow(2, rowOperandsNumber);
+
+        for (int columnIter = 0; columnIter < columnSize; columnIter++) {
+            String rowHeaderInGreyCode = getGreyCode(columnIter, columnOperandsNumber);
+            List<Boolean> rowInVeitchKarnaughTable = new ArrayList<>();
+
+            for (int rowIter = 0; rowIter < rowSize; rowIter++) {
+                String columnHeaderInGreyCode = getGreyCode(rowIter, rowOperandsNumber);
+                String valuesCombination = rowHeaderInGreyCode + columnHeaderInGreyCode;
+                int indexOfCombinationInTruthTable = Integer.parseInt(valuesCombination, 2);
+
+                Boolean valuesCombinationResult = formulaTruthTable.getRow(indexOfCombinationInTruthTable).get(numberOfOperands);
 
                 rowInVeitchKarnaughTable.add(valuesCombinationResult);
             }
@@ -402,6 +487,7 @@ public class Minimization {
             List<List<Boolean>> incompleteVariantOfTable = new ArrayList<>(quineMcCluskeyTable);
             incompleteVariantOfTable.remove(rowIter);
 
+            if(incompleteVariantOfTable.isEmpty()) continue;
             if (hasEmptyColumns(incompleteVariantOfTable)) {
                 continue;
             }
@@ -597,7 +683,6 @@ public class Minimization {
         return groupCounter + constituent.length() + 2 >= formula.length();
     }
 
-    @NotNull
     private static String removeParentheses(String formula, int groupCounter) {
         return formula.substring(formula.indexOf('(', groupCounter) + 1, formula.indexOf(')', formula.indexOf('(', groupCounter) + 1));
     }
